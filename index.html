@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>D3 Timeline</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./styles/main.css?v=1" />
+  <script defer src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script defer src="./scripts/app.js?v=1"></script>
+</head>
+<body>
+  <header class="container">
+    <h1>Timeline</h1>
+    <div class="actions">
+      <button id="helpTourBtn">Tour</button>
+      <a id="methodologyBtn" href="#" aria-label="Methodology">Methodology</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="controls">
+
+      <div class="topic-dropdown-wrapper">
+        <button id="topicDropdownBtn">Filter Topics</button>
+        <div id="topicDropdown"></div>
+      </div>
+
+      <div class="source-dropdown-wrapper">
+        <button id="sourceDropdownBtn">Filter Sources</button>
+        <div id="sourceDropdown"></div>
+      </div>
+
+      <div>
+        <input type="text" id="search" placeholder="Search" />
+      </div>
+
+      <!-- <label><input id="keyEventFilter" type="checkbox" /> Key events only</label> -->
+    </div>
+
+    <div id="container">
+      <div id="mobileZoom" aria-label="Zoom controls">
+        <button id="zoomOutBtn" title="Zoom out">−</button>
+        <button id="zoomInBtn" title="Zoom in">+</button>
+      </div>
+      <svg id="chart" preserveAspectRatio="xMidYMid meet"></svg>
+      <div id="detailView" class="detail-view">
+        <p>Select a dot to view more info here.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Guided tour DOM nodes created dynamically by app.js -->
+</body>
+</html>
