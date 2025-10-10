@@ -465,8 +465,8 @@ body {
 
 /* Zoom buttons overlay */
 #mobileZoom {
-  position: absolute;
-  right: 12px;
+  position: relative;
+  left: 12px;
   top: 12px;
   display: flex;
   gap: 8px;
