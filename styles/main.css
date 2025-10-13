@@ -14,11 +14,17 @@ body {
 
 #controls {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 1rem;
   margin-bottom: 1rem;
   align-items: center;
   font-size: 14px;
+}
+
+@media (max-width: 1000px) {
+  #controls {
+    flex-wrap: wrap;
+  }
 }
 
 #controls label {
