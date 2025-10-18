@@ -1,7 +1,12 @@
+html, body { height: 80%; margin: 0; }
+
 body {
+  display: grid;
   font-family: sans-serif;
   padding: 1rem;
 }
+
+#menuToggle { display: none; }
 
 #controls input[type="text"],
 #controls button {
@@ -21,7 +26,7 @@ body {
   font-size: 14px;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 640px) {
   #controls {
     flex-wrap: wrap;
   }
@@ -53,7 +58,6 @@ body {
   margin-right: 0.3rem;
 }
 
-/* Shared dropdown option styling */
 .dropdown-option {
   display: flex;
   align-items: flex-start;
@@ -124,6 +128,28 @@ body {
   text-align: left;
 }
 
+#controls {
+  position: relative;
+  z-index: auto;
+}
+
+.topic-dropdown-wrapper,
+.source-dropdown-wrapper {
+  position: relative;   
+  z-index: 2000;        
+}
+
+#topicDropdown,
+#sourceDropdown {
+  z-index: 3000 !important;  /* higher than .detail-view and the SVG */
+}
+
+
+.detail-view {
+  z-index: 2500;  
+}
+
+
 #helpTourBtn,
 #methodologyBtn {
   display: inline-block;
@@ -135,7 +161,7 @@ body {
   font-size: 14px;
   font-family: inherit; /* normalize text */
   line-height: 1.4; /* normalize vertical rhythm */
-  text-decoration: none; /* so <a> has no underline */
+  text-decoration: none; /* <a> has no underline */
   color: inherit; /* keep text consistent */
 }
 
@@ -243,7 +269,7 @@ body {
 
 #container {
   position: relative; 
-  display: flex;
+  display: grid;
   gap: 16px;
   align-items: flex-start;
   width: 100%;
@@ -254,22 +280,107 @@ body {
   width: 100%;
   max-width: 100%;
   height: auto;
-  aspect-ratio: 2 / 1;
-  display: block;
+  aspect-ratio: auto;
+  display: grid;
 }
 
+/* Keep the chart under the UI */
+#chart { position: relative; z-index: 0; }
+
+
+/* ——— Detail View (roll-up) ——— */
+
+/* Base window (expanded by default) */
 .detail-view {
+  position: fixed;
+  right: 20px;
+  top: 20px;
   width: 300px;
-  min-height: 200px;
-  padding: 1em;
+  min-height: 200px;                 
   border: 1px solid #ccc;
-  background: #f9f9f9;
+  border-radius: 8px;
+  background: rgba(249,249,249,0.5);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
   font-size: 14px;
 }
 
-.detail-view h3 {
-  margin-top: 0;
-  font-size: 16px;
+/* Header stays visible in both states */
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+/* Caret button (inline in the header; always visible) */
+.detail-toggle {
+  width: 24px;
+  height: 24px;
+  line-height: 22px;
+    transform: rotate(180deg);
+
+  border: 1px solid #cdd;
+  background: #fff;
+  border-radius: 999px;
+  font-size: 14px;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  user-select: none;
+  transition: transform 0.2s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.detail-toggle:hover,
+.detail-toggle:focus {
+  border-color: #6cc06f;
+  box-shadow: 0 0 0 3px rgba(108,192,111,0.25);
+  
+}
+
+.detail-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #333;
+}
+
+/* Content area that rolls up/down */
+.detail-content,
+#detailContent { 
+  overflow: hidden;
+  transition: max-height 0.28s ease, opacity 0.18s ease, padding 0.18s ease;
+  max-height: 1000px;              
+  padding: 8px 12px 12px 12px;    
+}
+
+/* Collapsed: keep width, shrink to just the header; rotate caret */
+.detail-view.collapsed {
+  min-height: auto !important;     /* overrides base 200px so it can compress */
+}
+.detail-view.collapsed .detail-content,
+.detail-view.collapsed #detailContent {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border: 0;
+}
+.detail-view.collapsed .detail-toggle {
+  transform: rotate(360deg);
+}
+
+/* Mobile: when layout switches the panel to static, header spacing can be a bit larger */
+@media (max-width: 640px) {
+  .detail-view {
+    position: static !important;
+    right: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  }
+  .detail-header { padding: 10px 12px; }
 }
 
 .annotation-box {
@@ -460,12 +571,13 @@ body {
   height: auto;
   aspect-ratio: 2 / 1;
   display: block;
+  touch-action: none;
 }
 
 /* mobile */
 @media (max-width: 640px) {
   #chart {
-    aspect-ratio: 3 / 4;
+    aspect-ratio: auto;
   }
 }
 
@@ -476,7 +588,7 @@ body {
   top: 12px;
   display: flex;
   gap: 8px;
-  z-index: 20;
+  z-index: 10;
 }
 #mobileZoom button {
   border: 1px solid #cdd;
@@ -498,6 +610,7 @@ body {
     width: 100%;
     order: 2;
   }
+  
 
   #controls {
     width: 100%;
@@ -562,4 +675,94 @@ body {
 #sourceDropdownBtn:focus {
   border-color: #6cc06f;
   box-shadow: 0 0 0 3px rgba(108, 192, 111, 0.25);
+}
+
+/* ——— Mobile layout changes (<= 640px) ——— */
+@media (max-width: 640px) {
+  /* Hide the “Tour” entry point on mobile */
+  #helpTourBtn { display: none !important; }
+
+  /* Hide all D3-drawn annotation layers on mobile */
+  svg .annotations { display: none !important; }
+
+  /* Turn the top control row into a hamburger */
+  #controls {
+    position: relative;
+    gap: 0.6rem;
+  }
+
+  /* The hamburger button */
+  #menuToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    background: #fff;
+    border-radius: 8px;
+    line-height: 1.2;
+    font-size: 14px;
+  }
+
+  /* Collapsed = show only the hamburger */
+  #controls.collapsed > :not(#menuToggle) { display: none !important; }
+
+  /* Expanded = show everything (stacked) */
+  #controls.expanded { flex-direction: column; align-items: stretch; }
+  #controls.expanded > * { display: block; width: 100%; }
+
+  /* Put the detail view under the chart */
+  .detail-view {
+    position: static !important;  
+    right: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  }
+
+  /* Slightly different mobile look */
+  .detail-view {
+    background: #fff;
+    border: 0px solid #ddd;
+    border-radius: 8px;
+  }
+
+  #chart { margin-bottom: 8px; }
+}  
+
+/* ——— Mid-range: 641–1000px ——— */
+@media (min-width: 641px) and (max-width: 1000px) {
+  .detail-view {
+    top: 70px !important; /* drop ~50px from the base 20px */
+  }
+}
+
+/* Ensure interactive UI is on top between 641–1000px */
+@media (min-width: 641px) and (max-width: 1000px) {
+  /* Keep controls above the chart/SVG */
+  #controls { position: relative; z-index: 10; }
+
+  /* Wrappers establish stacking contexts */
+  .topic-dropdown-wrapper,
+  .source-dropdown-wrapper { position: relative; z-index: 20; }
+
+  /* Popovers above everything else */
+  #topicDropdown,
+  #sourceDropdown { z-index: 2000; }
+
+  /* Detail window + its header/caret above overlays */
+  .detail-view { z-index: 3000; }
+}
+
+/* when any dropdown is open, ignore pointer events on the zoom controls */
+body:has(#topicDropdown.show),
+body:has(#sourceDropdown.show) {
+  /* nothing – just the selector scope */
+}
+
+body:has(#topicDropdown.show) #mobileZoom,
+body:has(#sourceDropdown.show) #mobileZoom {
+  pointer-events: none;
 }

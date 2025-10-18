@@ -1,5 +1,15 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Timeline v7</title>
+    <link rel="stylesheet" href="./style.css">
+
+  </head>
+    
+  <body>
+  <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -30,7 +40,7 @@
       <!-- <label><input id="keyEventFilter" type="checkbox" /> Key events only</label> -->
 
           <div class="actions">
-      <button id="helpTourBtn">Tour</button>
+      <button id="helpTourBtn">Tutorial</button>
       <a id="methodologyBtn" href="https://gpwmdcounterdisinfo.com/biological-and-chemical-weapons-timeline/methodology/" aria-label="Methodology">Methodology</a>
     </div>
     </div>
@@ -41,12 +51,29 @@
         <button id="zoomInBtn" title="Zoom in">+</button>
       </div>
       <svg id="chart" preserveAspectRatio="xMidYMid meet"></svg>
-      <div id="detailView" class="detail-view">
-        <p>Select a dot to view more info here.</p>
-      </div>
+<div id="detailView" class="detail-view" aria-expanded="true">
+  <div class="detail-header">
+    <button id="detailToggleBtn"
+            class="detail-toggle"
+            aria-label="Collapse details"
+            aria-expanded="true"
+            title="Collapse/expand">v</button>
+    <span class="detail-title">Details</span>
+  </div>
+
+  <div id="detailContent" class="detail-content">
+    <p>Select a dot to view more info here.</p>
+  </div>
+</div>
+
     </div>
   </main>
 
   <!-- Guided tour DOM nodes created dynamically by app.js -->
 </body>
+</html>
+    <script  src="./script.js"></script>
+
+  </body>
+  
 </html>
