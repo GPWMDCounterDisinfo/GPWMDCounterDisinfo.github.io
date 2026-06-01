@@ -246,6 +246,12 @@ DOT_CENTER_Y = LAYOUT.top + LAYOUT.chartHeight / 2; // LAYOUT.top + LAYOUT.chart
     .attr("viewBox", `0 0 ${width} ${getTotalHeight()}`)
     .attr("preserveAspectRatio", "xMidYMid meet");
 
+  // Show loading spinner
+  const loadingSpinner = document.getElementById('loadingSpinner');
+  if (loadingSpinner) {
+    loadingSpinner.classList.remove('hidden');
+  }
+
   // Load CSV
   d3.csv(csvUrl, (d) => {
     const parsedDate = new Date(d.Date);
@@ -280,6 +286,12 @@ DOT_CENTER_Y = LAYOUT.top + LAYOUT.chartHeight / 2; // LAYOUT.top + LAYOUT.chart
     };
   })
   .then((data) => {
+    // Hide loading spinner
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    if (loadingSpinner) {
+      loadingSpinner.classList.add('hidden');
+    }
+
     rawData = data.filter(Boolean);
     FULL_EXTENT = d3.extent(rawData, d => d.date); 
     setupFilters();
@@ -287,6 +299,12 @@ DOT_CENTER_Y = LAYOUT.top + LAYOUT.chartHeight / 2; // LAYOUT.top + LAYOUT.chart
   })
   
   .catch((err) => {
+    // Hide loading spinner on error
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    if (loadingSpinner) {
+      loadingSpinner.classList.add('hidden');
+    }
+
     console.error("CSV load failed:", err?.message || err, err);
     d3.select("#detailContent").html(
       `<p style="color:#b00">⚠️ Data failed to load.<br>
