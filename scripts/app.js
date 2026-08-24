@@ -73,6 +73,16 @@ function getTotalHeight() {
   return isMobile() ? noAnnoBand : withAnnoBand;
 }
 
+// Keep the SVG's rendered CSS box in exact 1:1 px sync with its viewBox.
+// Without this, #chart's CSS (aspect-ratio) can disagree with the viewBox's
+// real aspect ratio, and the browser letterboxes/scales the chart to fit —
+// which shrinks dots/labels unpredictably and, at some widths, leaves no
+// headroom for annotation rows that sit right at the bottom edge.
+function syncChartBoxHeight() {
+  if (!svg) return;
+  svg.style("height", `${getTotalHeight()}px`);
+}
+
 function clampDomain([start, end], [min, max]) {
   const span = +end - +start;
   const maxSpan = +max - +min;
@@ -206,6 +216,31 @@ function runTutorialWhenReady(startFn) {
 
 // =============== Init & boot ===============
 
+// Tell an embedding parent (e.g. a WordPress iframe) our real content
+// height so it can auto-size itself instead of hardcoding a fixed height
+// that either clips content or leaves dead space. Harmless when not
+// embedded — postMessage simply never fires.
+const PARENT_RESIZE_SOURCE = "cb-tracker";
+let lastPostedHeight = 0;
+
+function postHeightToParent() {
+  if (window.parent === window) return; // not embedded in an iframe
+  const h = Math.ceil(document.documentElement.scrollHeight);
+  if (h === lastPostedHeight) return;
+  lastPostedHeight = h;
+  window.parent.postMessage({ source: PARENT_RESIZE_SOURCE, type: "resize", height: h }, "*");
+}
+
+function bindParentResizeReporting() {
+  if (window.parent === window) return;
+  // Catches every layout change that affects height: data load, filtering,
+  // zoom, annotation stacking, the mobile detail-view collapse, etc.
+  const ro = new ResizeObserver(() => postHeightToParent());
+  ro.observe(document.documentElement);
+  window.addEventListener("load", postHeightToParent);
+  postHeightToParent();
+}
+
 function bindZoomButtons() {
   if (ZOOM_LISTENERS_BOUND) return;
   ZOOM_LISTENERS_BOUND = true;
@@ -245,6 +280,7 @@ DOT_CENTER_Y = LAYOUT.top + LAYOUT.chartHeight / 2; // LAYOUT.top + LAYOUT.chart
   svg = d3.select(chartEl)
     .attr("viewBox", `0 0 ${width} ${getTotalHeight()}`)
     .attr("preserveAspectRatio", "xMidYMid meet");
+  syncChartBoxHeight();
 
   // Show loading spinner
   const loadingSpinner = document.getElementById('loadingSpinner');
@@ -322,10 +358,12 @@ DOT_CENTER_Y = LAYOUT.top + LAYOUT.chartHeight / 2; // LAYOUT.top + LAYOUT.chart
   // Mobile viewBox height updates
   window.matchMedia(MOBILE_MQ).addEventListener("change", () => {
     if (svg) svg.attr("viewBox", `0 0 ${width} ${getTotalHeight()}`);
+    syncChartBoxHeight();
     updateChart();
   });
 
   bindZoomButtons();
+  bindParentResizeReporting();
 }
 
 // DOM ready & d3 available
@@ -994,6 +1032,16 @@ function drawAnnotations(x, data) {
 
       let level = 0;
       while (placedLabels.some(l => !(labelX2 < l.x1 || labelX1 > l.x2 || level !== l.level))) level++;
+
+      // Only LAYOUT.annoRowsMax rows are reserved in the SVG's viewBox/height.
+      // Assigning a label past that band would draw it below the chart's
+      // visible area, where it's silently clipped by the SVG viewport —
+      // invisible, and (unlike normal page content) not reachable by
+      // scrolling. When a time range is too dense to stack cleanly, skip
+      // the label (the dot itself is still there and clickable) rather
+      // than drawing it somewhere the viewer can never see.
+      if (level >= LAYOUT.annoRowsMax) return;
+
       placedLabels.push({ x1: labelX1 - labelPadding, x2: labelX2 + labelPadding, level });
 
       const yBase = ANNO_Y0 + level * LAYOUT.annoRow;
@@ -1148,6 +1196,7 @@ function resizeChart() {
   if (!container || !svg) return;
   width = Math.max(320, (container.clientWidth || 0) - 40);
   svg.attr("viewBox", `0 0 ${width} ${getTotalHeight()}`);
+  syncChartBoxHeight();
   updateChart();
 }
 

@@ -1,4 +1,4 @@
-html, body { height: 80%; margin: 0; }
+html, body { height: 100%; margin: 0; }
 
 body {
   display: grid;
@@ -599,6 +599,10 @@ body {
 }
 
 /* desktop / default */
+/* Height is set in px by app.js (syncChartBoxHeight) to match the SVG's
+   viewBox exactly, so the rendered box never disagrees with the chart's
+   real content height. Keep a rough aspect-ratio here only as a fallback
+   for the instant before JS runs; it gets overridden immediately after. */
 #chart {
   width: 100%;
   max-width: 100%;
@@ -606,13 +610,6 @@ body {
   aspect-ratio: 2 / 1;
   display: block;
   touch-action: none;
-}
-
-/* mobile */
-@media (max-width: 640px) {
-  #chart {
-    aspect-ratio: auto;
-  }
 }
 
 /* Zoom buttons overlay */
