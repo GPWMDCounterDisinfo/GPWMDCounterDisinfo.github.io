@@ -811,6 +811,11 @@ data.forEach(d => {
     .attr("stroke-width", d => (d.keyEvent ? 2 : 0))
     .on("mouseenter touchstart", (event, d) => {
       const noteText = d.notes.length > 200 ? d.notes.slice(0, 200) + "…" : d.notes;
+      // Anchoring the tooltip 10px right of the cursor always pushes it off
+      // the right edge (and gets squished by the iframe's own boundary)
+      // once the cursor is past the midpoint. Flip it to hang off the left
+      // of the cursor instead once we're in the right half of the window.
+      const flipLeft = event.pageX > window.innerWidth / 2;
       tooltip
         .style("display", "block")
         .style("opacity", 0.9)
@@ -818,7 +823,8 @@ data.forEach(d => {
           `<strong>${d.event}</strong><br/>
            <p style="max-width:250px;white-space:normal;word-wrap:break-word;margin:0;">${noteText}</p>`
         )
-        .style("left", event.pageX + 10 + "px")
+        .style("left", flipLeft ? "auto" : event.pageX + 10 + "px")
+        .style("right", flipLeft ? window.innerWidth - event.pageX + 10 + "px" : "auto")
         .style("top", event.pageY - 28 + "px");
     })
     .on("mouseleave touchend", () => {
