@@ -225,7 +225,16 @@ let lastPostedHeight = 0;
 
 function postHeightToParent() {
   if (window.parent === window) return; // not embedded in an iframe
-  const h = Math.ceil(document.documentElement.scrollHeight);
+  // Deliberately document.body, not document.documentElement: the root
+  // <html> element's scrollHeight is spec'd to never report less than the
+  // current viewport height — and the viewport here *is* the iframe's own
+  // height, which the parent sets from whatever we last reported. Measuring
+  // the root element makes the value a floor that can only ratchet upward
+  // (any transient overshoot, e.g. mid-layout during data load, gets
+  // reported, the parent grows the iframe to match, and that larger size
+  // becomes the new floor — repeat and it runs away). document.body has no
+  // such floor and reflects only its actual rendered content.
+  const h = Math.ceil(document.body.scrollHeight);
   if (h === lastPostedHeight) return;
   lastPostedHeight = h;
   window.parent.postMessage({ source: PARENT_RESIZE_SOURCE, type: "resize", height: h }, "*");
@@ -233,10 +242,12 @@ function postHeightToParent() {
 
 function bindParentResizeReporting() {
   if (window.parent === window) return;
-  // Catches every layout change that affects height: data load, filtering,
-  // zoom, annotation stacking, the mobile detail-view collapse, etc.
+  // Observe body (not documentElement) so this only fires on real content
+  // changes — data load, filtering, zoom, annotation stacking, the mobile
+  // detail-view collapse — not merely because the parent just resized the
+  // iframe (which would itself trigger documentElement's own box to change).
   const ro = new ResizeObserver(() => postHeightToParent());
-  ro.observe(document.documentElement);
+  ro.observe(document.body);
   window.addEventListener("load", postHeightToParent);
   postHeightToParent();
 }
