@@ -1,4 +1,11 @@
-html, body { height: 100%; margin: 0; }
+/* No explicit height here on purpose: `height: 100%` resolves against the
+   iframe's own viewport, and this page's postMessage auto-resize sets the
+   parent iframe's height from this page's measured content height. Those
+   two facts together form a feedback loop — body stretches to match
+   whatever height the parent just set, we report that inflated height
+   back, and the parent grows again, runaway, with no natural ceiling.
+   Leave height unset so body sizes purely from its own content. */
+html, body { margin: 0; }
 
 body {
   display: grid;
